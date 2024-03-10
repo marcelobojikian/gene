@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+cat <<"EOF"
+Usage: gene [OPTIONS] COMMAND
+
+Commands:
+  cache                    Manage cache files
+  first-installer          Standard installer for vitual machines in Proxmox
+
+Options:
+  -h, --help               Show this message
+  -v, --version            Print version information and quit
+  -l, --log-level string   Set the logging level ("debug"|"info"|"warn"|"error"|"fatal") (default "error")
+
+Run 'gene COMMAND -h' for more information on a command.
+For more details, see man gene.
+EOF
