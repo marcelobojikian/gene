@@ -45,6 +45,11 @@ To use this script, make sure the packages are installed.
     ```bash
     bash -c "$(curl -sSL https://github.com/marcelobojikian/gene/raw/main/install.sh)"
     ```
+2. Check options and commands,
+    ```bash
+    gene --help
+    ```
+
 
 ## :memo: Licença
 
