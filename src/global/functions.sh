@@ -1,7 +1,7 @@
 
 command_key(){
 
-  declare -A targets
+  declare -a targets
   
   targets[cache]=global
   targets[first-installer]=proxmox
