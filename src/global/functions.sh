@@ -1,21 +1,23 @@
 
 command_key(){
 
-  declare -a targets
+  declare -A targets
   
   targets[cache]=global
   targets[first-installer]=proxmox
 
-  echo "${targets[$1]}/$1.sh"
+  [[ ${!targets[@]} =~ $1 ]] && echo ${targets[$1]}/$1.sh || echo $1
+
 }
 
 log() {
   
   local severity=$(echo "${1}" | awk '{print toupper($0)}')
+  [ -z $severity ] && severity=FATAL
   shift
 
   local -A levels=( ['DEBUG']="7" ['INFO']="6" ['WARN']="4" ['ERROR']="3" ['FATAL']="2")
-  [[ ! ${!levels[@]} =~ $severity ]] && echo "Invalid log" && exit 1
+  [[ ! ${!levels[@]} =~ $severity ]] && echo "Invalid log" && return 1
 
   local LEVEL=$(echo "${LOG_LEVEL:-"ERROR"}" | awk '{print toupper($0)}')
   local LOG="${levels[${LEVEL}]}"
@@ -24,58 +26,88 @@ log() {
   local msg="[${severity}] ${@}";
 
   [ $LOG -ge $lvl_msg ] && echo -e $msg
-
+  return 0
 }
 
 download() {
 
-    local URL=$URI/$1
+    local URL=$1
     local DEST_FILE=$2
     
-    local HTTP_CODE=$(curl -sSLo "$DEST_FILE" -w "%{http_code}" "$URL")
+    local HTTP_CODE=$(curl -sLo "$DEST_FILE" -w "%{http_code}" "$URL")
 
     if [ ${HTTP_CODE} -eq 404 ] ; then
-      rm -f "$DEST_FILE"
-      echo "Url not found: $URL" && exit 1
+      log debug URL: $URL
+      log error Url not found: $URL
+      rm -f "$DEST_FILE" && exit 1
     elif [ ${HTTP_CODE} -ne 200 ] ; then
-      rm -f "$DEST_FILE"
-      echo "Downloaded fail: $URL" && exit 2
+      log debug URL: $URL
+      log debug DEST_FILE: $DEST_FILE
+      log error Downloaded fail: $URL
+      rm -f "$DEST_FILE" && exit 2
     fi
 
 }
 
-cmd_cache() {
-  
-  DEFAULT_CACHE_CONF=~/.gene/cache/conf.txt
-  path_caching=
-  key_caching=global/cache.sh
+download_key() {
 
-  [ ! -f "$DEFAULT_CACHE_CONF" ] && exit 1
+  [ $# -lt 3 ] && log error "Invalid download key parameters" && exit 1
+  [ ! -d "$2" ] && log error "Path download key is not a folder" && exit 1
 
-  CACHE_PATH=$(get_config "$DEFAULT_CACHE_CONF" "PATH")
-  CANONICAL_CACHING=$(eval dirname $CACHE_PATH)/$(basename $CACHE_PATH)
-  path_caching="$CANONICAL_CACHING/global/cache.sh"
+  local KEY=$3
 
-  if [ ! -f $path_caching ] ; then
+  local FROM_URL=$1/$KEY
+  local TO_FILE=$2/$KEY
 
-    local KEY_CACHE="$(command_key cache)"
+  if [ ! -f $TO_FILE ] ; then
+
+    log debug "Caching file $TO_FILE"
     
-    mkdir -p $(dirname "$path_caching")
-    download "$key_caching" "$path_caching"
-    chmod +x "$path_caching"
+    mkdir -p $(dirname "$TO_FILE")
+    download "$FROM_URL" "$TO_FILE"
+    chmod +x "$TO_FILE"
 
   fi
-  
-  local KEY=$1
 
-  cmd_cached=$($path_caching get $KEY 2> /dev/null)
+  echo $TO_FILE
+
+}
+
+cache() {
+
+  [ $# -lt 3 ] && log error "Invalid cache parameters" && exit 1
+
+  local BASE_URL=$1
+  local FOLDER=$2
+  local KEY=$3
+
+  file_cache=$(download_key "$BASE_URL" "$FOLDER" "global/cache.sh")
+
+  new_cmd_cached=$($file_cache get "$KEY")  
   if [ $? -ne 0 ] ; then
-    local FILE=$(mktemp -u)
-    download "$KEY" "$FILE"
-    cmd_cached=$($path_caching put "$KEY" "$FILE")
-    chmod +x "$cmd_cached"
+    new_file=$(download_key "$BASE_URL" "$(mktemp -d)" "$KEY")
+    new_cmd_cached=$($file_cache put "$KEY" "$new_file")
   fi
 
-  echo $cmd_cached
+  echo $new_cmd_cached
+
+}
+
+launcher() {
+
+  [ -z $URI ] && log error "Invalid url to download" && exit 1
+
+  local KEY=$(command_key "${1:-cache}")
+  local PARAMS=${@:2}
+
+  local SOURCE=$(mktemp -d)
+  if [ "$CACHEABLE" == "true" ] ; then
+    SOURCE=$(cache "$URI" "$CACHE_PATH" "$KEY")
+  else
+    SOURCE=$(download_key "$URI" "$SOURCE" "$KEY")
+    chmod +x "$SOURCE"
+  fi
+
+  echo $SOURCE $PARAMS
 
 }
