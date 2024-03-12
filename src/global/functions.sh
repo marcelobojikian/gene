@@ -81,11 +81,11 @@ cache() {
   local FOLDER=$2
   local KEY=$3
 
-  file_cache=$(download_key "$BASE_URL" "$FOLDER" "global/cache.sh")
+  local file_cache=$(download_key "$BASE_URL" "$FOLDER" "global/cache.sh")
 
-  new_cmd_cached=$($file_cache get "$KEY")  
+  local new_cmd_cached=$($file_cache get "$KEY")  
   if [ $? -ne 0 ] ; then
-    new_file=$(download_key "$BASE_URL" "$(mktemp -d)" "$KEY")
+    local new_file=$(download_key "$BASE_URL" "$(mktemp -d)" "$KEY")
     new_cmd_cached=$($file_cache put "$KEY" "$new_file")
   fi
 
@@ -102,6 +102,8 @@ launcher() {
 
   local SOURCE=$(mktemp -d)
   if [ "$CACHEABLE" == "true" ] ; then
+    [ -z $CACHE_PATH ] && log error "Set cache path" && exit 1
+    [ ! -d $CACHE_PATH ] && log error "Invalid cache path: $CACHE_PATH" && exit 1
     SOURCE=$(cache "$URI" "$CACHE_PATH" "$KEY")
   else
     SOURCE=$(download_key "$URI" "$SOURCE" "$KEY")
