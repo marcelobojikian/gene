@@ -1,32 +1,57 @@
 #!/usr/bin/env bash
 
 DEFAULT_CONF=~/.gene/conf.txt
-DEFAULT_CACHE_CONF=~/.gene/cache/conf.txt
-
-[ ! -f "$DEFAULT_CONF" ] && echo "Default configuration not found on $DEFAULT_CONF" && exit 1
+TRY_MESSAGE="Try 'gene -h' for more information."
 
 export LOG_LEVEL=
-URI=
+export URI=
+export CACHE_PATH=
+export CACHEABLE=false
 
-get_config() {
+target=
+
+[[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
+
+_get_config() {
   local var=$(cat "$1" | grep "$2")
   [[ $var = *"="* ]] && echo $(echo $var | cut -d'=' -f2)
 }
 
-_setup() {
+_uri() {
 
-  URI="$(get_config "$DEFAULT_CONF" "URI")"
-  [ -z "$URI" ] && echo "Default URI not found on file $DEFAULT_CONF" && exit 1
+  if [ -z $URI ] ; then
+    if [ -f "$DEFAULT_CONF" ] ; then
+      URI="$(_get_config "$DEFAULT_CONF" "URI")"
+      [ -z "$URI" ] && echo "Default URI not found" && exit 1
+    fi
+  fi
 
-  DEFAULT_LOG_LEVEL="$(get_config "$DEFAULT_CONF" "LOG_LEVEL")"
-  LOG_LEVEL=${DEFAULT_LOG_LEVEL:-"ERROR"}
+}
+
+_cache_path() {
+
+  if [ -z $CACHE_PATH ] ; then
+    if [ -f "$DEFAULT_CONF" ] ; then
+      CACHE_PATH="$(_get_config "$DEFAULT_CONF" "CACHE_PATH")"
+    fi
+  fi
+
+}
+
+_log_level() {
+
+  if [ -z $DEFAULT_LOG_LEVEL ] ; then
+    if [ -f "$DEFAULT_CONF" ] ; then
+      DEFAULT_LOG_LEVEL="$(_get_config "$DEFAULT_CONF" "LOG_LEVEL")"
+    fi
+  fi
 
 }
 
 _functions() {
 
   local FUNCTIONS_KEY="global/functions.sh"
-  local FUNCTIONS_FILE="$(get_config "$DEFAULT_CONF" "FUNCTIONS")"
+  local FUNCTIONS_FILE="$(_get_config "$DEFAULT_CONF" "FUNCTIONS")"
 
   if [ -z $FUNCTIONS_FILE ] ; then
     source <(curl -sSL "$URI/$FUNCTIONS_KEY")
@@ -40,65 +65,56 @@ _functions() {
 
 }
 
-run() {
+_command() {
 
-  local KEY=$1
-  local PARAMS=${@:2}
+  [ -z $target ] && _usage
 
-  local SOURCE=$(mktemp -u)
-  if [ -f "$DEFAULT_CACHE_CONF" ] ; then
-    SOURCE=$(cmd_cache $KEY)
-  else
-    download "$KEY" "$SOURCE"
-    chmod +x "$SOURCE"
+  _uri
+  _cache_path
+  _log_level
+  _functions
+
+  result=$(launcher "$target" $@)
+  if [ $? -ne 0 ] ; then
+    echo $result
+    exit 1
   fi
-
-  $SOURCE $PARAMS
-  
+  . $result
 }
 
 _usage() {
   local LANG=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
-  run "usage/$LANG/${1:-gene}" $@
+  target="usage/$LANG/${target:-gene}"
 }
 
 _version() {
-    echo "Version: 1.0"
+    echo "Version: 1.0" && exit 0
 }
 
-_setup
-_functions
-
-target=gene
-target_key="usage/en/gene"
-if [[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] ; then
-  target=$1
-  target_key=$(command_key $target)
-  shift
-fi
-
-[ $# = 0 ] && _usage $target && exit 0
-
-while getopts ':vh-l:' OPTION ; do
+while getopts ':vhCc:l:-:' OPTION ; do
     case "$OPTION" in
-    h ) _usage $target && exit 0 ;;
-    v ) _version && exit 0 ;;
+    h ) _usage ;;
+    v ) _version ;;
+    C ) CACHEABLE=true ;;
+    c ) CACHE_PATH="$OPTARG" && CACHEABLE=true ;;
     l ) LOG_LEVEL="$OPTARG" ;;
     - ) [ $OPTIND -ge 1 ] && optind=$(expr $OPTIND - 1 ) || optind=$OPTIND
          eval OPTION="\$$optind"
          OPTARG=$(echo $OPTION | cut -d'=' -f2)
          OPTION=$(echo $OPTION | cut -d'=' -f1)
          case $OPTION in
-            --help) _usage $target && exit 0 ;;
-            --version) _version && exit 0 ;;
+            --help) _usage ;;
+            --version) _version ;;
+            --cache-path) CACHE_PATH="$OPTARG" && CACHEABLE=true ;;
             --log-level) LOG_LEVEL="$OPTARG" ;;
-            * ) echo -e "Invalid option: $OPTARG \r\nTry 'gene -h' for more information." && exit 1 ;;
+            --uri) URI="$OPTARG" ;;
+            * ) echo -e "Invalid option: $OPTARG \r\n$TRY_MESSAGE" && exit 1 ;;
          esac
        OPTIND=1
        shift
       ;;
-    ? ) echo -e "Invalid option: $OPTARG \r\nTry 'gene -h' for more information." && exit 1 ;;
+    ? ) echo -e "Invalid option: $OPTARG \r\n$TRY_MESSAGE" && exit 1 ;;
     esac
 done
 
-run $target_key $@
+_command $@
