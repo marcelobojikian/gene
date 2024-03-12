@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 
-canonical() {
-  echo $(eval dirname "$1")/$(basename "$1")
-}
+canonical() { echo $(eval dirname "$1")/$(basename "$1"); }
 
 PROJECT_ROOT=https://github.com/marcelobojikian/gene/raw/main
 
@@ -17,6 +15,7 @@ mkdir -p "$COMMAND_PATH_CONF"
 echo Set default configuration on path $COMMAND_PATH_CONF/conf.txt
 cat <<EOF > $COMMAND_PATH_CONF/conf.txt
 URI=$PROJECT_ROOT/src
+CACHE_PATH=$COMMAND_PATH_CONF/cache
 FUNCTIONS=$COMMAND_PATH_CONF/cache/global/functions.sh
 LOG_LEVEL=ERROR
 EOF
@@ -27,6 +26,6 @@ TO=/usr/local/sbin/$COMMAND_NAME
 sudo curl -sSLo "$TO" --progress-bar "$PROJECT_ROOT/src/command.sh" && sudo chmod +x "$TO"
 
 echo Enable cache on path $COMMAND_PATH_CONF/cache
-$COMMAND_NAME cache enable --url="$PROJECT_ROOT/src" --path="$COMMAND_PATH_CONF/cache"
+$COMMAND_NAME --uri=$PROJECT_ROOT --cache-path="$COMMAND_PATH_CONF/cache" -v
 
 echo Instalacao completa
