@@ -3,70 +3,69 @@
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
     _path global
-
-    CACHE_DIR_CONF=~/.gene/cache 
-    CACHE_FILE_CONF=$CACHE_DIR_CONF/conf.txt
-
-    TEST_DIR=$(mktemp -du)
+    TEST_FILE=$(mktemp -u)
+    TEST_DIR=$(mktemp -d)
     echo "TEST_DIR: ${TEST_DIR}"
 }
 
 teardown() {
+    rm -f "$TEST_FILE"
     rm -rf "$TEST_DIR"
     echo "status: ${status}"
     echo "output: ${output}"
 }
 
-get_config() {
-    echo $(cat "$CACHE_FILE_CONF" | grep "$1" | cut -d'=' -f2)
+@test "Invalid when option is after command" {
+    run cache.sh put --path=$TEST_DIR    
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "Set cache path" ]]
+    [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid command without key parameter" {
-    run cache.sh enable --url="http://teste.url" --path=$TEST_DIR
-    [[ "${status}" -eq 0 ]]
-    [[ -f "$CACHE_FILE_CONF" ]]
+@test "Invalid when command without path" {
+    run cache.sh put     
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "Set cache path" ]]
+    [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
+}
 
-    run cache.sh put
+@test "Invalid without key parameter" {
+    run cache.sh --path=$TEST_DIR put
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "One o more paramaters failed." ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid command without filename parameter" {
-    run cache.sh enable --url="http://teste.url" --path=$TEST_DIR
-    [[ "${status}" -eq 0 ]]
-    [[ -f "$CACHE_FILE_CONF" ]]
-
-    run cache.sh put XYZ
+@test "Invalid without file parameter" {
+    run cache.sh --path=$TEST_DIR put XYZ
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "One o more paramaters failed." ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Get cache without enable before " {
-
-    rm -r "$CACHE_DIR_CONF" 2> /dev/null
-
-    run cache.sh put XYZ
-    [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Enable cache first." ]]
-    [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
-}
-
-@test "Put new cache" {
-    
-    run cache.sh enable --url="http://teste.url" --path=$TEST_DIR
+@test "Success when Set new key " {
 
     KEY="123/XYZ"
-    FILE="$TEST_DIR/FROM/$KEY"
+    FILE="$(mktemp)"  
 
-    mkdir -p $(dirname "$FILE")
-    touch "$FILE"
+    [[ -f "$FILE" ]]
+    [[ ! -f "$TEST_DIR/$KEY" ]]
 
-    run cache.sh put "$KEY" "$FILE"
+    run cache.sh --path=$TEST_DIR put $KEY "$FILE"
     [[ "${status}" -eq 0 ]]
-    [[ -f "$TEST_DIR/$KEY" ]]
-    [[ ! -f "$FILE" ]]
     [[ "${lines[0]}" == "$TEST_DIR/$KEY" ]]
+
+    [[ -f "$TEST_DIR/$KEY" ]]
+
+}
+
+@test "Fail when file not exist" {
+
+    KEY="123/XYZ"
+    FILE="$(mktemp -u)"  
+
+    run cache.sh --path=$TEST_DIR put $KEY "$FILE"
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "File not found: $TEST_DIR/$KEY" ]]
 
 }

@@ -1,89 +1,56 @@
 #!/usr/bin/env bash
 
-try_usage="Try 'gene cache -h' for more information."
+canonical() { echo $(eval dirname "$1")/$(basename "$1"); }
+error_message() { echo $@ && echo "Try 'gene cache -h' for more information." &&  exit 1; }
+request_one_param() { [ -z "$1" ] && error_message "One o more paramaters failed."; }
+required_two_param() { [ -z "$1" ] || [ -z "$2" ] && error_message "One o more paramaters failed."; }
 
-canonical() {
-  echo $(eval dirname "$1")/$(basename "$1")
-}
+CACHE_PATH=
 
-CACHE_DIR_CONF=$(canonical ~/.gene/cache)
-CACHE_FILE_CONF=$CACHE_DIR_CONF/conf.txt
-
-CACHE_PATH=$CACHE_DIR_CONF
-CACHE_URL=none
-
-[[ -z "$1" || "$1" =~ ^- || "$1" =~ ^-- ]] && echo "No command or option." && echo $try_usage && exit 1
-
-target=$1
-shift
-
-[ "$target" != "enable" ] && [ ! -d "$CACHE_DIR_CONF" ] && echo "Enable cache first." && echo $try_usage && exit 1
-
-while getopts ':-:' OPTION ; do
+while getopts ':p:-:' OPTION ; do
     case "$OPTION" in
+    p ) CACHE_PATH=$(canonical "$OPTARG") ;;
     - ) [ $OPTIND -ge 1 ] && optind=$(expr $OPTIND - 1 ) || optind=$OPTIND
          eval OPTION="\$$optind"
          OPTARG=$(echo $OPTION | cut -d'=' -f2)
          OPTION=$(echo $OPTION | cut -d'=' -f1)
          case $OPTION in
             --path) CACHE_PATH=$(canonical "$OPTARG") ;;
-            --url) CACHE_URL="$OPTARG" ;;
-            * ) echo -e "Invalid option: $OPTARG \r\n$try_usage" && exit 1 ;;
+            * ) error_message "Invalid option: $OPTARG " ;;
          esac
        OPTIND=1
        shift
       ;;
-    ? ) echo -e "Invalid option: $OPTARG \r\n$try_usage" && exit 1 ;;
+    ? ) error_message "Invalid option: $OPTARG " ;;
     esac
 done
 
-get_config() {
-  local path=$(cat "$CACHE_FILE_CONF" | grep "$1" | cut -d'=' -f2)
-  echo $(canonical "$path")
-}
+[[ -z "$1" ]] && error_message "No command or option."
+[[ "$1" =~ ^-p ]] && shift && shift
+target=$1
+shift
 
-set_config() {
-    cat <<EOF > $1
-PATH=$CACHE_PATH
-URL=$CACHE_URL
-EOF
-}
+[ -z "$CACHE_PATH" ] && error_message "Set cache path"
+[ ! -d "$CACHE_PATH" ] && error_message "Invalid cache path"
 
-request_one_param() {
-  [ -z "$1" ] && echo "One o more paramaters failed." && echo $try_usage && exit 1
-}
-
-required_two_param() {
-  [ -z "$1" ] || [ -z "$2" ] && echo "One o more paramaters failed." && echo $try_usage && exit 1
-}
+[ "$target" != "enable" ] && [ ! -d "$CACHE_PATH" ] && error_message "Enable cache first."
 
 case $target in
-  "enable")
-
-    [ "$CACHE_URL" == "none" ] && echo "No url option." && echo $try_usage && exit 1
-    
-    mkdir -p "$CACHE_DIR_CONF"
-    set_config "$CACHE_FILE_CONF"
+  "enable")    
     mkdir -p "$CACHE_PATH"
   ;;
-  "delete")
-    if [ -f "$CACHE_FILE_CONF" ]; then
-        PATH_DIR=$(get_config PATH)
-        [ "$PATH_DIR" != "$CACHE_DIR_CONF" ] && rm -r $PATH_DIR        
-        rm -r $CACHE_DIR_CONF
-    fi
+  "delete")  
+    rm -r $CACHE_PATH
   ;;
   "get")
     request_one_param $@
-    PATH_DIR=$(get_config PATH)
-    KEY="$PATH_DIR/$1"
+    KEY="$CACHE_PATH/$1"
     [ ! -f "$KEY" ] && echo "Cache not found: $KEY" && exit 1
     echo $KEY
   ;;
   "put")
     required_two_param $@
-    PATH_DIR=$(get_config PATH)
-    KEY="$PATH_DIR/$1"
+    KEY="$CACHE_PATH/$1"
     FILE="$2"
     [ ! -f "$FILE" ] && echo "File not found: $KEY" && exit 1
     mkdir -p $(dirname "$KEY")
@@ -91,6 +58,6 @@ case $target in
     echo $KEY
   ;;
   *)
-    echo "Invalid command: $target" && echo $try_usage && exit 1
+    error_message "Invalid command: $target"
   ;;
 esac

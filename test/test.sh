@@ -13,16 +13,11 @@ server_on(){
 }
 server_off(){ kill $server_pid; }
 
-
 launch global/cache
-launch global/functions/log.bats
-launch global/functions/command_key.bats
 
 server_on
 
-launch global/functions/cache.bats
-launch global/functions/download_key.bats
-launch global/functions/download.bats
-launch global/functions/launcher.bats
+launch global/functions
+launch command
 
 server_off
