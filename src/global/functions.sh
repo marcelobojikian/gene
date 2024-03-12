@@ -83,10 +83,10 @@ cache() {
 
   local file_cache=$(download_key "$BASE_URL" "$FOLDER" "global/cache.sh")
 
-  local new_cmd_cached=$($file_cache get "$KEY")  
-  if [ $? -ne 0 ] ; then
+  local new_cmd_cached="$FOLDER/$KEY"
+  if [ '$file_cache -p "$FOLDER" get "$KEY"' ] ; then
     local new_file=$(download_key "$BASE_URL" "$(mktemp -d)" "$KEY")
-    new_cmd_cached=$($file_cache put "$KEY" "$new_file")
+    new_cmd_cached=$($file_cache -p $FOLDER put "$KEY" "$new_file")
   fi
 
   echo $new_cmd_cached

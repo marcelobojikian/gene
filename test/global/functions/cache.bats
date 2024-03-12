@@ -39,7 +39,7 @@ _cache() {
 }
 
 @test "Cache caching it self" {
-    skip "#Problema: Erro no sh do cacher, porque ele sempre usa PATH=~/cache/conf.txt como referencia; por isso as pastas sao diferentes, cache tem que ser dinamico"
+
     [[ ! -f "$TEST_DIR/global/cache.sh" ]]
 
     result=$(_cache "$HOST" "$TEST_DIR" "global/cache.sh")
@@ -50,14 +50,13 @@ _cache() {
 }
 
 @test "Cache caching usage" {
-    skip "#Problema -> Igual problema do teste anterior"
+    
     [[ ! -f "$TEST_DIR/usage/en/cache" ]]
     
     result=$(_cache "$HOST" "$TEST_DIR" "usage/en/cache")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
 
-    # Igual problema do teste passado
     [[ -f "$TEST_DIR/usage/en/cache" ]]
     [[ "$result" == "$TEST_DIR/usage/en/cache" ]]
 

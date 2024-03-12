@@ -65,26 +65,20 @@ _launcher() {
     [[ "${result}" == *"global/cache.sh --teste=true enable" ]]
 }
 
- # mesmo problema do teste no cache.bats
- # essta criando uma pasta deferenciada no programa cache.sh
 @test "Success launcher command cacheable" {
-    skip "#Problema -> cache.bats ( cria pasta em diferente path )"
     CACHEABLE=true
     result=$(_launcher cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh" ]]
 
-    # Verificar porque no arquivo cache.bats
     [[ -f "$CACHE_PATH/global/cache.sh" ]]
 }
 
 @test "Success launcher usage cacheable" {
-    skip "  #Problema -> cache.bats ( cria pasta em diferente path )"
     CACHEABLE=true
     result=$(_launcher usage/en/cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"usage/en/cache" ]]
 
-    # Verificar porque no arquivo cache.bats
     [[ -f "$CACHE_PATH/usage/en/cache" ]]
 }
