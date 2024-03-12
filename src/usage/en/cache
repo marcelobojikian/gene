@@ -11,8 +11,7 @@ Commands:
 
 Options:
   -h, --help           Show this message
-      --url=<string>   Where cache need to download file
-      --path=<string>  Path to send the cache ( $HOME/.gene/cache )
+  -p, --path=<string>  Path to send the cache ( $HOME/.gene/cache )
 
 Run 'gene cache -h' for more information on a command.
 For more details, see man gene.
