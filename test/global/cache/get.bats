@@ -32,7 +32,7 @@ teardown() {
 @test "Invalid without second parameter" {
     run cache.sh --path=$TEST_DIR get
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "One o more paramaters failed." ]]
+    [[ "${lines[0]}" == "Cache get command requires one parameter" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
@@ -40,9 +40,9 @@ teardown() {
 
     KEY="123/XYZ"
     mkdir -p $(dirname "$TEST_DIR/$KEY")
-    touch "$TEST_DIR/$KEY"
+    > "$TEST_DIR/$KEY"
 
-    run cache.sh --path=$TEST_DIR get $KEY "123/XYZ"
+    run cache.sh --path="$TEST_DIR" get "$KEY"
     [[ "${status}" -eq 0 ]]
     [[ "${lines[0]}" == "$TEST_DIR/$KEY" ]]
 
@@ -52,7 +52,7 @@ teardown() {
 
     KEY="123/XYZ"
 
-    run cache.sh --path=$TEST_DIR get $KEY "123/XYZ"
+    run cache.sh --path=$TEST_DIR get $KEY
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Cache not found: $TEST_DIR/$KEY" ]]
 

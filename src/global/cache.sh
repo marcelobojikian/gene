@@ -1,12 +1,56 @@
 #!/usr/bin/env bash
 
-canonical() { echo $(eval dirname "$1")/$(basename "$1"); }
-error_message() { echo $@ && echo "Try 'gene cache -h' for more information." &&  exit 1; }
-request_one_param() { [ -z "$1" ] && error_message "One o more paramaters failed."; }
-required_two_param() { [ -z "$1" ] || [ -z "$2" ] && error_message "One o more paramaters failed."; }
+set -e
 
+# Variables
 CACHE_PATH=
 
+# Functions
+canonical() { 
+  echo $(eval dirname "$1")/$(basename "$1")
+}
+
+die() { 
+  printf "${@}\nTry 'gene cache -h' for more information.\n"
+  exit 1
+}
+
+main() {
+
+  [ "${1#\-}" == "p" ] && shift 2
+
+  [ -z "$1" ] && die "No command or option."
+  local target=$1
+  shift
+
+  [ -z "$CACHE_PATH" ] && die "Set cache path"
+  [ ! -d "$CACHE_PATH" ] && die "Invalid cache path"
+
+  [ "$target" != "enable" ] && [ ! -d "$CACHE_PATH" ] && die "Enable cache first."
+
+  case $target in
+    "enable") mkdir -p "$CACHE_PATH" ;;
+    "delete") rm -r $CACHE_PATH ;;
+    "get")
+      [ -z "$1" ] && die "Cache get command requires one parameter"
+      local KEY="$CACHE_PATH/$1"
+      [ ! -f "$KEY" ] && echo "Cache not found: $KEY" && exit 1
+      echo $KEY
+    ;;
+    "put")
+      [ -z "$1" ] || [ -z "$2" ] && die "Cache put command requires two parameters"
+      local KEY="$CACHE_PATH/$1"
+      local FILE="$2"
+      [ ! -f "$FILE" ] && echo "File not found: $KEY" && exit 1
+      mkdir -p $(dirname "$KEY")
+      mv "$FILE" "$KEY"
+      echo $KEY
+    ;;
+    *) die "Invalid command: $target";;
+  esac
+}
+
+# Main
 while getopts ':p:-:' OPTION ; do
     case "$OPTION" in
     p ) CACHE_PATH=$(canonical "$OPTARG") ;;
@@ -16,48 +60,13 @@ while getopts ':p:-:' OPTION ; do
          OPTION=$(echo $OPTION | cut -d'=' -f1)
          case $OPTION in
             --path) CACHE_PATH=$(canonical "$OPTARG") ;;
-            * ) error_message "Invalid option: $OPTARG " ;;
+            * ) die "Invalid option: $OPTARG " ;;
          esac
        OPTIND=1
        shift
       ;;
-    ? ) error_message "Invalid option: $OPTARG " ;;
+    ? ) die "Invalid option: $OPTARG " ;;
     esac
 done
 
-[[ -z "$1" ]] && error_message "No command or option."
-[[ "$1" =~ ^-p ]] && shift && shift
-target=$1
-shift
-
-[ -z "$CACHE_PATH" ] && error_message "Set cache path"
-[ ! -d "$CACHE_PATH" ] && error_message "Invalid cache path"
-
-[ "$target" != "enable" ] && [ ! -d "$CACHE_PATH" ] && error_message "Enable cache first."
-
-case $target in
-  "enable")    
-    mkdir -p "$CACHE_PATH"
-  ;;
-  "delete")  
-    rm -r $CACHE_PATH
-  ;;
-  "get")
-    request_one_param $@
-    KEY="$CACHE_PATH/$1"
-    [ ! -f "$KEY" ] && echo "Cache not found: $KEY" && exit 1
-    echo $KEY
-  ;;
-  "put")
-    required_two_param $@
-    KEY="$CACHE_PATH/$1"
-    FILE="$2"
-    [ ! -f "$FILE" ] && echo "File not found: $KEY" && exit 1
-    mkdir -p $(dirname "$KEY")
-    mv "$FILE" "$KEY"
-    echo $KEY
-  ;;
-  *)
-    error_message "Invalid command: $target"
-  ;;
-esac
+main $@

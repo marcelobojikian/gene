@@ -32,14 +32,14 @@ teardown() {
 @test "Invalid without key parameter" {
     run cache.sh --path=$TEST_DIR put
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "One o more paramaters failed." ]]
+    [[ "${lines[0]}" == "Cache put command requires two parameters" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
 @test "Invalid without file parameter" {
     run cache.sh --path=$TEST_DIR put XYZ
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "One o more paramaters failed." ]]
+    [[ "${lines[0]}" == "Cache put command requires two parameters" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
