@@ -10,68 +10,27 @@ export CACHEABLE=false
 
 target=
 
+[ -f $DEFAULT_CONF ] && . ~/.gene/conf.txt
 [[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
-
-_get_config() {
-  local var=$(cat "$1" | grep "$2")
-  [[ $var = *"="* ]] && echo $(echo $var | cut -d'=' -f2)
-}
-
-_uri() {
-
-  if [ -z $URI ] ; then
-    if [ -f "$DEFAULT_CONF" ] ; then
-      URI="$(_get_config "$DEFAULT_CONF" "URI")"
-      [ -z "$URI" ] && echo "Default URI not found" && exit 1
-    fi
-  fi
-
-}
-
-_cache_path() {
-
-  if [ -z $CACHE_PATH ] ; then
-    if [ -f "$DEFAULT_CONF" ] ; then
-      CACHE_PATH="$(_get_config "$DEFAULT_CONF" "CACHE_PATH")"
-    fi
-  fi
-
-}
-
-_log_level() {
-
-  if [ -z $DEFAULT_LOG_LEVEL ] ; then
-    if [ -f "$DEFAULT_CONF" ] ; then
-      DEFAULT_LOG_LEVEL="$(_get_config "$DEFAULT_CONF" "LOG_LEVEL")"
-    fi
-  fi
-
-}
 
 _functions() {
 
   local FUNCTIONS_KEY="global/functions.sh"
-  local FUNCTIONS_FILE="$(_get_config "$DEFAULT_CONF" "FUNCTIONS")"
 
-  if [ -z $FUNCTIONS_FILE ] ; then
+  if [ -z $FUNCTIONS ] ; then
     source <(curl -sSL "$URI/$FUNCTIONS_KEY")
   else
-    if [ ! -f $FUNCTIONS_FILE ] ; then
-      mkdir -p $(dirname "$FUNCTIONS_FILE")
-      curl -sSLo "$FUNCTIONS_FILE" "$URI/$FUNCTIONS_KEY"
+    if [ ! -f $FUNCTIONS ] ; then
+      mkdir -p $(dirname "$FUNCTIONS")
+      curl -sSLo "$FUNCTIONS" "$URI/$FUNCTIONS_KEY"
     fi
-    source "$FUNCTIONS_FILE"
+    source "$FUNCTIONS"
   fi
 
 }
 
 _command() {
 
-  [ -z $target ] && _usage
-
-  _uri
-  _cache_path
-  _log_level
   _functions
 
   result=$(launcher "$target" $@)
@@ -116,5 +75,7 @@ while getopts ':vhCc:l:-:' OPTION ; do
     ? ) echo -e "Invalid option: $OPTARG \r\n$TRY_MESSAGE" && exit 1 ;;
     esac
 done
+
+[ -z $target ] && _usage
 
 _command $@
