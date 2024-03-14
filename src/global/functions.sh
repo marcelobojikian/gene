@@ -97,7 +97,7 @@ launcher() {
 
   [ -z $URI ] && log error "Invalid url to download" && exit 1
 
-  local KEY=$(command_key "${1:-cache}")
+  local KEY=$(command_key "$1")
   local PARAMS=${@:2}
 
   local SOURCE=$(mktemp -d)

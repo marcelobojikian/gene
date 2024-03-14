@@ -10,7 +10,7 @@ export CACHEABLE=false
 
 target=
 
-[ -f $DEFAULT_CONF ] && . ~/.gene/conf.txt
+[ -f $DEFAULT_CONF ] && . $DEFAULT_CONF
 [[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
 
 _functions() {
@@ -43,7 +43,7 @@ _command() {
 
 _usage() {
   local LANG=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
-  target="usage/$LANG/${target:-gene}"
+  target="usage/$LANG/${1:-gene}"
 }
 
 _version() {
@@ -76,6 +76,6 @@ while getopts ':vhCc:l:-:' OPTION ; do
     esac
 done
 
-[ -z $target ] && _usage
+[ -z $target ] && _usage $1 && shift
 
 _command $@

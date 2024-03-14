@@ -21,8 +21,14 @@ debug() {
   fi
 }
 
-show_usage() {
-    run command.sh --uri=$HOST $@    
+show_cache_help() {
+    run command.sh --uri=$HOST $1 ${@:2}
+    [[ "${status}" -eq 0 ]]
+    [[ "${lines[0]}" == "Usage: gene cache"* ]]
+}
+
+show_gene_help() {
+    run command.sh --uri=$HOST $@
     [[ "${status}" -eq 0 ]]
     [[ "${lines[0]}" == "Usage: gene [OPTIONS] COMMAND"* ]]
 }
@@ -47,11 +53,17 @@ invalid_option() {
     invalid_option --XXXXXX
 }
 
-@test "Check help option" {
-    show_usage 
-    show_usage -h
-    show_usage --help
-    show_usage -hl info
+@test "Check gene help" {
+    show_gene_help 
+    show_gene_help -h
+    show_gene_help --help
+    show_gene_help -hl info
+}
+
+@test "Check cache help" {
+    show_cache_help cache
+    show_cache_help cache -h
+    show_cache_help cache --help
 }
 
 @test "Check version option" {
