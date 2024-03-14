@@ -1,76 +1,88 @@
 #!/usr/bin/env bats
 # bats file_tags=server,command
 
-setup() {
+setup_file() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    methods "global/functions.sh"
-    HOST=$(server)
-    _setup 
+    setSrcPath
+
+    local HOST=$(testServer)
+
+    export CACHE_DIR=$(mktemp -d)
+    export ENV_FILE=$(getEnv "URI=$HOST"  \
+                             "CACHEABLE=true" \
+                             "CACHE_PATH=$CACHE_DIR")
+
+}
+
+teardown_file() {
+    rm -rf "$CACHE_DIR"
+    rm -f "$ENV_FILE"
+}
+
+setup() {
+    cat $ENV_FILE
 }
 
 teardown() {
+    echo "CACHE_DIR: ${CACHE_DIR}"
+    echo "ENV_FILE: ${ENV_FILE}"
     echo "status: ${status}"
     echo "output: ${output}"
 }
 
-debug() {
-  status="$1"
-  output="$2"
-  if [[ ! "${status}" -eq "0" ]]; then
-    echo "status: ${status}"
-    echo "output: ${output}"
-  fi
+launch() {
+    run command.sh --env-file=$ENV_FILE $@
 }
 
-show_cache_help() {
-    run command.sh --uri=$HOST $1 ${@:2}
+subcommand_help() {
+    launch $1 ${@:2}
     [[ "${status}" -eq 0 ]]
-    [[ "${lines[0]}" == "Usage: gene cache"* ]]
+    [[ "${lines[0]}" == "Usage: gene $1"* ]]
 }
 
-show_gene_help() {
-    run command.sh --uri=$HOST $@
+command_help() {
+    launch $@
     [[ "${status}" -eq 0 ]]
     [[ "${lines[0]}" == "Usage: gene [OPTIONS] COMMAND"* ]]
 }
 
-show_version() {
-    run command.sh --uri=$HOST $@ 
+command_version() {
+    launch $@ 
     [[ "${status}" -eq 0 ]]
     [[ "${lines[0]}" == "Version: "* ]]
 }
 
 invalid_option() {
-    run command.sh --uri=$HOST $@
+    launch $@
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Invalid option: "* ]]
     [[ "${lines[1]}" == "Try 'gene -h' for more information." ]]
 }
 
-@test "Check invalid option" {
+@test "Should show invalid option" {
     invalid_option -E
     invalid_option -Ehv
     invalid_option -X
     invalid_option --XXXXXX
 }
 
-@test "Check gene help" {
-    show_gene_help 
-    show_gene_help -h
-    show_gene_help --help
-    show_gene_help -hl info
+@test "Should show cache usage" {
+    subcommand_help cache
+    subcommand_help cache -h
+    subcommand_help cache --help
 }
 
-@test "Check cache help" {
-    show_cache_help cache
-    show_cache_help cache -h
-    show_cache_help cache --help
+@test "Should show gene usage" {
+    command_help 
+    command_help -h
+    command_help --help
+    command_help -hl info
 }
 
-@test "Check version option" {
-    show_version -hv
-    show_version -vh
-    show_version -v
-    show_version --version
-    show_version -vl
+@test "Should show gene version" {
+    command_version -hv
+    command_version -vh
+    command_version -v
+    command_version --version
+    command_version -vl
 }

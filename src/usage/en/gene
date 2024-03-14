@@ -12,6 +12,7 @@ Options:
   -c, --cache-path string  Define path for caching
   -C                       Enable cache in a default path (~/.gene/cache)
       --uri                Change url to find the resources
+      --env-file           Set the configuration file
   -l, --log-level string   Set the logging level ("debug"|"info"|"warn"|"error"|"fatal") (default "error")
 
 Run 'gene COMMAND -h' for more information on a command.

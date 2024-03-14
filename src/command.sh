@@ -1,31 +1,44 @@
 #!/usr/bin/env bash
 
-DEFAULT_CONF=~/.gene/conf.txt
-TRY_MESSAGE="Try 'gene -h' for more information."
+ENV_FILE=
 
-export LOG_LEVEL=
 export URI=
+export LOG_LEVEL=
 export CACHE_PATH=
 export CACHEABLE=false
 
 target=
 
-[ -f $DEFAULT_CONF ] && . $DEFAULT_CONF
 [[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
+
+die() { printf "${@}\nTry 'gene -h' for more information.\n" && exit 1 ; }
+
+_env() {
+
+  [ ! -f $1 ] && die "Invalid configuration file: $1"
+  ENV_FILE="$1"
+  . "$ENV_FILE"
+  
+}
 
 _functions() {
 
-  local FUNCTIONS_KEY="global/functions.sh"
+  [ -f $URI ] && die "Unknown uri, use option --uri to set valid url."
 
-  if [ -z $FUNCTIONS ] ; then
-    . <(curl -sSL "$URI/$FUNCTIONS_KEY")
+  local HTTP_CODE=200
+  if [ -z $FILE_GLOBAL_FUNC ] ; then
+    local FILE=$(mktemp -u)
+    HTTP_CODE=$(curl -sLo "$FILE" -w "%{http_code}" "$URI/global/functions.sh")
+    . "$FILE"
   else
-    if [ ! -f $FUNCTIONS ] ; then
-      mkdir -p $(dirname "$FUNCTIONS")
-      curl -sSLo "$FUNCTIONS" "$URI/$FUNCTIONS_KEY"
+    if [ ! -f $FILE_GLOBAL_FUNC ] ; then
+      mkdir -p $(dirname "$FILE_GLOBAL_FUNC")
+      HTTP_CODE=$(curl -sLo "$FILE_GLOBAL_FUNC" -w "%{http_code}" "$URI/global/functions.sh")
     fi
-    . "$FUNCTIONS"
+    . "$FILE_GLOBAL_FUNC"
   fi
+
+  [ ${HTTP_CODE} -ne 200 ] && echo "Url invalida: ${URI}" && exit 1
 
 }
 
@@ -35,15 +48,16 @@ _command() {
 
   result=$(launcher "$target" $@)
   if [ $? -ne 0 ] ; then
-    echo $result
-    exit 1
+    echo $result && exit 1    
   fi
+
   . $result
+
 }
 
 _usage() {
-  local LANG=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
-  target="usage/$LANG/${1:-gene}"
+  local language=$(locale | grep LANGUAGE | cut -d= -f2 | cut -d_ -f1)
+  target="usage/${language}/${1:-gene}"
 }
 
 _version() {
@@ -67,15 +81,17 @@ while getopts ':vhCc:l:-:' OPTION ; do
             --cache-path) CACHE_PATH="$OPTARG" && CACHEABLE=true ;;
             --log-level) LOG_LEVEL="$OPTARG" ;;
             --uri) URI="$OPTARG" ;;
-            * ) echo -e "Invalid option: $OPTARG \r\n$TRY_MESSAGE" && exit 1 ;;
+            --env-file) _env "$OPTARG" ;;
+            * ) die "Invalid option: $OPTARG ";;
          esac
        OPTIND=1
        shift
       ;;
-    ? ) echo -e "Invalid option: $OPTARG \r\n$TRY_MESSAGE" && exit 1 ;;
+    ? ) die "Invalid option: $OPTARG " ;;
     esac
 done
 
+[ -z $ENV_FILE ] && . ~/.gene/environment.conf
 [ -z $target ] && _usage $1 && shift
 
 _command $@
