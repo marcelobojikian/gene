@@ -18,13 +18,13 @@ _functions() {
   local FUNCTIONS_KEY="global/functions.sh"
 
   if [ -z $FUNCTIONS ] ; then
-    source <(curl -sSL "$URI/$FUNCTIONS_KEY")
+    . <(curl -sSL "$URI/$FUNCTIONS_KEY")
   else
     if [ ! -f $FUNCTIONS ] ; then
       mkdir -p $(dirname "$FUNCTIONS")
       curl -sSLo "$FUNCTIONS" "$URI/$FUNCTIONS_KEY"
     fi
-    source "$FUNCTIONS"
+    . "$FUNCTIONS"
   fi
 
 }
