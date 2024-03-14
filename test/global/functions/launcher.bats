@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# bats file_tags=server,functions
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
@@ -59,10 +60,16 @@ _launcher() {
     [[ "${result}" == *"global/cache.sh" ]]
 }
 
-@test "Success launcher command with parameters" {
+@test "Success launcher command with large parameters" {
     result=$(_launcher cache --teste=true enable)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh --teste=true enable" ]]
+}
+
+@test "Success launcher command with small parameters" {
+    result=$(_launcher cache -t true enable)
+    [[ ! -z "$result" ]]
+    [[ "${result}" == *"global/cache.sh -t true enable" ]]
 }
 
 @test "Success launcher command cacheable" {

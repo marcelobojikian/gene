@@ -2,8 +2,10 @@
 # https://bats-core.readthedocs.io/en/stable/tutorial.html
 
 export PROJECT_ROOT="$( cd "$(pwd)/.." >/dev/null 2>&1 && pwd )"
+launcher="$PROJECT_ROOT/third/bats/bin/bats"
 
-launch(){ $PROJECT_ROOT/third/bats/bin/bats -p $PROJECT_ROOT/test/$1; }
+launch_tag(){ $launcher -pTr "$PROJECT_ROOT/test" --filter-tags "$1"; }
+launch(){ [ $# -eq 0 ] && $launcher -prT "$PROJECT_ROOT/test/global/cache" || $launcher -pT "$PROJECT_ROOT/test/$1" ; }
 
 server_pid=
 server_on(){
@@ -13,11 +15,8 @@ server_on(){
 }
 server_off(){ kill $server_pid; }
 
-launch global/cache
+launch_tag !server
 
 server_on
-
-launch global/functions
-launch command
-
+launch_tag server
 server_off

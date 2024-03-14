@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+# bats file_tags=server,functions
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
