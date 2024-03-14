@@ -3,8 +3,8 @@
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    methods "global/functions.sh"
-    HOST=$(server)
+    loadMethods "global/functions.sh"
+    HOST=$(testServer)
     TEST_FILE=$(mktemp)
     TEST_DIR=$(mktemp -d)
     echo "TEST_FILE: ${TEST_FILE}"

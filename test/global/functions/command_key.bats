@@ -3,7 +3,7 @@
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    methods "global/functions.sh"
+    loadMethods "global/functions.sh"
     result=
 }
 

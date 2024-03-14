@@ -1,23 +1,17 @@
 #!/usr/bin/env bash
 
-_setup() {
+loadThirdHelpers() {
     load "$PROJECT_ROOT/third/test_helper/bats-support/load"
     load "$PROJECT_ROOT/third/test_helper/bats-assert/load"  
-    PATH="$PROJECT_ROOT/src:$PATH"
 }
+loadMethods() { . "$PROJECT_ROOT/src/${1}"; }
 
-_path() {
-    load "$PROJECT_ROOT/third/test_helper/bats-support/load"
-    load "$PROJECT_ROOT/third/test_helper/bats-assert/load"  
-    PATH="$PROJECT_ROOT/src/${1}:$PATH"
-}
+testServer() { echo http://localhost:8000; }
 
-methods() {
-    load "$PROJECT_ROOT/third/test_helper/bats-support/load"
-    load "$PROJECT_ROOT/third/test_helper/bats-assert/load" 
-    source "$PROJECT_ROOT/src/${1}"
-}
+setSrcPath() { PATH="$PROJECT_ROOT/src:$PATH"; }
+setPath() { PATH="$PROJECT_ROOT/src/${1}:$PATH"; }
 
-server() {
-    echo http://localhost:8000
-}
+getEnvIn() { local FILE=$(mktemp -p "$1"); for i in ${@:2}; do echo "$i" >> $FILE; done; echo $FILE; }
+getEnv() { local FILE=$(mktemp); for i in ${@}; do echo "$i" >> $FILE; done; echo $FILE; }
+
+

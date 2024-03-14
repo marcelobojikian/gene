@@ -1,16 +1,17 @@
 #!/usr/bin/env bats
 # bats file_tags=cache
 
-setup() {
+setup_file() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    _path global
-    TEST_FILE=$(mktemp -u)
+    setPath global 
+}
+
+setup() {
     TEST_DIR=$(mktemp -d)
     echo "TEST_DIR: ${TEST_DIR}"
 }
 
 teardown() {
-    rm -f "$TEST_FILE"
     rm -rf "$TEST_DIR"
     echo "status: ${status}"
     echo "output: ${output}"

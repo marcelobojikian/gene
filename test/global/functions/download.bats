@@ -3,8 +3,8 @@
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    methods "global/functions.sh"
-    HOST=$(server)
+    loadMethods "global/functions.sh"
+    HOST=$(testServer)
     TEST_FILE=$(mktemp -u)
     echo "TEST_FILE: ${TEST_FILE}"
 }
@@ -22,7 +22,7 @@ _download() {
 }
 
 @test "Success to download file" {
-    assert download $HOST "$TEST_FILE"
+    download $HOST "$TEST_FILE"
     [[ "${status}" -eq 0 ]]
     [[ -f "$TEST_FILE" ]]
 }

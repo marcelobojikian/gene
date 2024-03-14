@@ -3,8 +3,8 @@
 
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
-    methods "global/functions.sh"
-    export URI=$(server)
+    loadMethods "global/functions.sh"
+    export URI=$(testServer)
     export LOG_LEVEL=ERROR
     export CACHE_PATH=$(mktemp -d)
     export CACHEABLE=false
