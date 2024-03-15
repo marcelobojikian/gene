@@ -5,36 +5,34 @@ setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
     loadMethods "global/functions.sh"
     HOST=$(testServer)
-    TEST_FILE=$(mktemp -u)
-    echo "TEST_FILE: ${TEST_FILE}"
+    TEST_FILE=$(mktemp -up "$TMPDIR")
 }
 
 teardown() {
     rm -f "$TEST_FILE"
-    echo "result: ${result}"
     echo "status: ${status}"
     echo "output: ${output}"
     echo "lines: ${lines[@]}"
 }
 
-_download() {
+launch() {
     echo $(download $@)
 }
 
-@test "Success to download file" {
+@test "Should download the new file" {
     download $HOST "$TEST_FILE"
     [[ "${status}" -eq 0 ]]
     [[ -f "$TEST_FILE" ]]
 }
 
-@test "Url not found" {
-    result=$(_download "$HOST/usage/XXXXX" "$TEST_FILE")
+@test "Should fail when Url not found" {
+    result=$(launch "$HOST/usage/XXXXX" "$TEST_FILE")
     [[ ! -f "$TEST_FILE" ]]
     [[ "${result}" == *"Url not found: "* ]]
 }
 
-@test "Url invalid" {
-    result=$(_download "https://invali.url" "$TEST_FILE")
+@test "Should fail when Url is invalid" {
+    result=$(launch "https://invali.url" "$TEST_FILE")
     [[ ! -f "$TEST_FILE" ]]
     [[ "${result}" == *"Downloaded fail: "* ]]
 }

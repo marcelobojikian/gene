@@ -4,64 +4,65 @@
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
     loadMethods "global/functions.sh"
-    HOST=$(testServer)
-    TEST_FILE=$(mktemp -u)
-    TEST_DIR=$(mktemp -d)
-    echo "TEST_FILE: ${TEST_FILE}"
+    export HOST=$(testServer)
+    export TEST_DIR=$(mktemp -dp "$TMPDIR")
 }
 
 teardown() {
-    rm -f "$TEST_FILE"
     rm -rf "$TEST_DIR"
-    echo "result: ${result}"
     echo "status: ${status}"
     echo "output: ${output}"
     echo "lines: ${lines[@]}"
 }
 
-_download_key() {
+launch() {
     echo $(download_key $@)
 }
 
-@test "Invalid parameters" {
-    result=$(_download_key)
+@test "Sould fail when informed less than 3 parameters" {
+    result=$(launch)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid download key parameters" ]]
 
-    result=$(_download_key "$HOST")
+    result=$(launch "$HOST")
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid download key parameters" ]]
 
-    result=$(_download_key "$HOST" "folder")
+    result=$(launch "$HOST" "folder")
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid download key parameters" ]]
 }
 
-@test "Invalid FOLDER parameter" {
-    result=$(_download_key "$HOST" "$TEST_FILE" "any")
+@test "Should fail when parameter folder is invalid" {
+    result=$(launch "$HOST" "$(mktemp -up "$TMPDIR")" "any")
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Path download key is not a folder" ]]
 }
 
-@test "Success caching file cache" {
+@test "Should download file cache.sh when requested" {
     
     [[ ! -f "$TEST_DIR/global/cache.sh" ]]
 
-    result=$(_download_key "$HOST" "$TEST_DIR" "global/cache.sh")
+    result=$(launch "$HOST" "$TEST_DIR" "global/cache.sh")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
     [[ "$result" == "$TEST_DIR/global/cache.sh" ]]
 }
 
-@test "Success caching twice file cache" {
+@test "Should download first time and retrive the same object in the second time" {
     
     [[ ! -f "$TEST_DIR/global/cache.sh" ]]
-
-    result=$(_download_key "$HOST" "$TEST_DIR" "global/cache.sh")
+    result=$(launch "$HOST" "$TEST_DIR" "global/cache.sh")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
 
-    result=$(_download_key "$HOST" "$TEST_DIR" "global/cache.sh")
+    CREATED=$(stat -c '%x' "$TEST_DIR/global/cache.sh")
+
+    result=$(launch "$HOST" "$TEST_DIR" "global/cache.sh")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
+
+    MODIFIED=$(stat -c '%x' "$TEST_DIR/global/cache.sh")
+
+    [[ "$CREATED" == "$MODIFIED" ]]
 }

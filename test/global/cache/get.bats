@@ -6,56 +6,62 @@ setup_file() {
     setPath global 
 }
 
-setup() {
-    TEST_DIR=$(mktemp -d)
-    echo "TEST_DIR: ${TEST_DIR}"
-}
-
 teardown() {
-    rm -rf "$TEST_DIR"
     echo "status: ${status}"
     echo "output: ${output}"
 }
 
-@test "Invalid when option is after command" {
-    run cache.sh get --path=$TEST_DIR    
+@test "Should fail when option --path or -p is not set" {
+    run cache.sh get
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid when command without path" {
-    run cache.sh get     
+@test "Should fail when option --path or -p is after get" {
+    run cache.sh get --path=XYZ
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid without second parameter" {
-    run cache.sh --path=$TEST_DIR get
+@test "Should fail when get without cache object" {
+    run cache.sh --path=$TMPDIR get
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache get command requires one parameter" ]]
+    [[ "${lines[0]}" == "Cache object must be informed" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Success when Get cache with key " {
+@test "Should fail when object not exist" {
 
-    KEY="123/XYZ"
-    mkdir -p $(dirname "$TEST_DIR/$KEY")
-    > "$TEST_DIR/$KEY"
+    KEY="folder/notExistObject"
 
-    run cache.sh --path="$TEST_DIR" get "$KEY"
+    run cache.sh --path=$TMPDIR get $KEY
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "Cache not found: $TMPDIR/$KEY" ]]
+
+    run cache.sh -p $TMPDIR get $KEY
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "Cache not found: $TMPDIR/$KEY" ]]
+
+}
+
+@test "Should get object when command is requered" {
+
+    KEY="folder/getFirstObject"
+    mkdir -p $(dirname "$TMPDIR/$KEY")
+    > "$TMPDIR/$KEY"
+
+    run cache.sh --path="$TMPDIR" get "$KEY"
     [[ "${status}" -eq 0 ]]
-    [[ "${lines[0]}" == "$TEST_DIR/$KEY" ]]
+    [[ "${lines[0]}" == "$TMPDIR/$KEY" ]]
 
-}
+    KEY="folder/getSecondObject"
+    mkdir -p $(dirname "$TMPDIR/$KEY")
+    > "$TMPDIR/$KEY"
 
-@test "Fail when key not exist" {
-
-    KEY="123/XYZ"
-
-    run cache.sh --path=$TEST_DIR get $KEY
-    [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache not found: $TEST_DIR/$KEY" ]]
+    run cache.sh --path="$TMPDIR" get "$KEY"
+    [[ "${status}" -eq 0 ]]
+    [[ "${lines[0]}" == "$TMPDIR/$KEY" ]]
 
 }

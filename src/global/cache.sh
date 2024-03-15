@@ -24,21 +24,22 @@ main() {
   shift
 
   [ -z "$CACHE_PATH" ] && die "Set cache path"
-  [ ! -d "$CACHE_PATH" ] && die "Invalid cache path"
 
-  [ "$target" != "enable" ] && [ ! -d "$CACHE_PATH" ] && die "Enable cache first."
+  [ "$target" != "enable" ] || [ "$target" == "delete" ] && [ ! -d "$CACHE_PATH" ] && die "Invalid cache path"
 
   case $target in
-    "enable") mkdir -p "$CACHE_PATH" ;;
     "delete") rm -r $CACHE_PATH ;;
+    "enable") 
+      [ -d "$CACHE_PATH" ] && echo "Cache is already enabled" || mkdir -p "$CACHE_PATH"
+    ;;
     "get")
-      [ -z "$1" ] && die "Cache get command requires one parameter"
+      [ -z "$1" ] && die "Cache object must be informed"
       local KEY="$CACHE_PATH/$1"
       [ ! -f "$KEY" ] && echo "Cache not found: $KEY" && exit 1
       echo $KEY
     ;;
     "put")
-      [ -z "$1" ] || [ -z "$2" ] && die "Cache put command requires two parameters"
+      [ -z "$1" ] || [ -z "$2" ] && die "Cache object and file must be informed"
       local KEY="$CACHE_PATH/$1"
       local FILE="$2"
       [ ! -f "$FILE" ] && echo "File not found: $KEY" && exit 1

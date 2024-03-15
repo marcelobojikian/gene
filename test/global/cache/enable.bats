@@ -6,39 +6,49 @@ setup_file() {
     setPath global 
 }
 
-setup() {
-    TEST_DIR=$(mktemp -d)
-    echo "TEST_DIR: ${TEST_DIR}"
-}
-
 teardown() {
-    rm -rf "$TEST_DIR"
     echo "status: ${status}"
     echo "output: ${output}"
 }
 
-@test "Invalid when option is after command" {
-    run cache.sh enable --path=$TEST_DIR
-    [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Set cache path" ]]
-    [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
-}
-
-@test "Invalid when command without path" {
+@test "Should fail when option --path or -p is not set" {
     run cache.sh enable     
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid cache path" {
-    run cache.sh -p "$(mktemp -u)" enable
+@test "Should fail when option --path or -p is after enable" {
+    run cache.sh enable --path=XYZ
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Invalid cache path" ]]
+    [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
+}
 
-    run cache.sh --path="$(mktemp -u)" enable
-    [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Invalid cache path" ]]
-    [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
+@test "Should enable when option --path or -p is already enabled" {
+    TEST_DIR=$(mktemp -dp "$TMPDIR")
+    [[ -d "$TEST_DIR" ]]
+
+    run cache.sh -p "$TEST_DIR" enable
+    [[ "${status}" -eq 0 ]]
+    [[ "${lines[0]}" == "Cache is already enabled" ]]
+
+    run cache.sh --path="$(mktemp -dp "$TMPDIR")" enable
+    [[ "${status}" -eq 0 ]]
+    [[ "${lines[0]}" == "Cache is already enabled" ]]
+}
+
+@test "Should enable when option --path or -p is not created yet" {
+    TEST_DIR=$(mktemp -udp "$TMPDIR")
+    [[ ! -d "$TEST_DIR" ]]
+    run cache.sh --path=$TEST_DIR enable
+    [[ "${status}" -eq 0 ]]
+    [[ -d "$TEST_DIR" ]]
+
+    TEST_DIR=$(mktemp -udp "$TMPDIR")
+    [[ ! -d "$TEST_DIR" ]]
+    run cache.sh -p $TEST_DIR enable
+    [[ "${status}" -eq 0 ]]
+    [[ -d "$TEST_DIR" ]]
+
 }

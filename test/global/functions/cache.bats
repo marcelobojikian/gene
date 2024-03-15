@@ -1,60 +1,55 @@
 #!/usr/bin/env bats
 # bats file_tags=server,functions
 
+setup_file() { export TEST_DIR=$(mktemp -dp "$TMPDIR"); }
+teardown_file() { rm -rf "$TEST_DIR"; }
+
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
     loadMethods "global/functions.sh"
     HOST=$(testServer)
-    TEST_FILE=$(mktemp)
-    TEST_DIR=$(mktemp -d)
-    echo "TEST_FILE: ${TEST_FILE}"
-    echo "TEST_DIR: ${TEST_DIR}"
-    result=
 }
 
 teardown() {
-    rm -f "$TEST_FILE"
-    rm -rf "$TEST_DIR"
-    echo "result: ${result}"
     echo "status: ${status}"
     echo "output: ${output}"
     echo "lines: ${lines[@]}"
 }
 
-_cache() {
+launch() {
     echo $(cache $@)
 }
 
-@test "Invalid parameters" {
-    result=$(_cache)
+@test "Sould fail when informed less than 3 parameters" {
+    result=$(launch)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid cache parameters" ]]
 
-    result=$(_cache "$HOST")
+    result=$(launch "$HOST")
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid cache parameters" ]]
 
-    result=$(_cache "$HOST" "folder")
+    result=$(launch "$HOST" "folder")
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid cache parameters" ]]
 }
 
-@test "Cache caching it self" {
+@test "Should download cache.sh to use cahcing and cache a object" {
 
     [[ ! -f "$TEST_DIR/global/cache.sh" ]]
 
-    result=$(_cache "$HOST" "$TEST_DIR" "global/cache.sh")
+    result=$(launch "$HOST" "$TEST_DIR" "global/cache.sh")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
     
     [[ "$result" == "$TEST_DIR/global/cache.sh" ]]
 }
 
-@test "Cache caching usage" {
+@test "Should download instruction usage" {
     
     [[ ! -f "$TEST_DIR/usage/en/cache" ]]
     
-    result=$(_cache "$HOST" "$TEST_DIR" "usage/en/cache")
+    result=$(launch "$HOST" "$TEST_DIR" "usage/en/cache")
     [[ ! -z "$result" ]]
     [[ -f "$TEST_DIR/global/cache.sh" ]]
 

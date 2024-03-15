@@ -6,68 +6,66 @@ setup_file() {
     setPath global 
 }
 
-setup() {
-    TEST_DIR=$(mktemp -d)
-    echo "TEST_DIR: ${TEST_DIR}"
-}
-
 teardown() {
-    rm -rf "$TEST_DIR"
     echo "status: ${status}"
     echo "output: ${output}"
 }
 
-@test "Invalid when option is after command" {
-    run cache.sh put --path=$TEST_DIR    
+@test "Should fail when option --path or -p is not set" {
+    run cache.sh put
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid when command without path" {
-    run cache.sh put     
+@test "Should fail when option --path or -p is after put" {
+    run cache.sh put --path=XYZ
     [[ "${status}" -eq 1 ]]
     [[ "${lines[0]}" == "Set cache path" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid without key parameter" {
-    run cache.sh --path=$TEST_DIR put
+@test "Should fail when put without cache object and file" {
+    run cache.sh --path=$TMPDIR put
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache put command requires two parameters" ]]
+    [[ "${lines[0]}" == "Cache object and file must be informed" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Invalid without file parameter" {
-    run cache.sh --path=$TEST_DIR put XYZ
+@test "Should fail when put with cache object and without cache file" {
+    run cache.sh --path=$TMPDIR put XYZ
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache put command requires two parameters" ]]
+    [[ "${lines[0]}" == "Cache object and file must be informed" ]]
     [[ "${lines[1]}" == "Try 'gene cache -h' for more information." ]]
 }
 
-@test "Success when Set new key " {
+@test "Should fail when file not exist" {
 
-    KEY="123/XYZ"
-    FILE="$(mktemp)"  
+    KEY="folder/object"
+    FILE="$(mktemp -up "$TMPDIR")"
+
+    run cache.sh --path=$TMPDIR put $KEY "$FILE"
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "File not found: $TMPDIR/$KEY" ]]
+
+    run cache.sh --path=$TMPDIR put $KEY "$FILE"
+    [[ "${status}" -eq 1 ]]
+    [[ "${lines[0]}" == "File not found: $TMPDIR/$KEY" ]]
+
+}
+
+@test "Should put file when command is requered" {
+    
+    KEY="folder/XYZ"
+    FILE="$(mktemp -p "$TMPDIR")"  
 
     [[ -f "$FILE" ]]
-    [[ ! -f "$TEST_DIR/$KEY" ]]
+    [[ ! -f "$TMPDIR/$KEY" ]]
 
-    run cache.sh --path=$TEST_DIR put $KEY "$FILE"
+    run cache.sh --path=$TMPDIR put $KEY "$FILE"
     [[ "${status}" -eq 0 ]]
-    [[ "${lines[0]}" == "$TEST_DIR/$KEY" ]]
+    [[ "${lines[0]}" == "$TMPDIR/$KEY" ]]
 
-    [[ -f "$TEST_DIR/$KEY" ]]
-
-}
-
-@test "Fail when file not exist" {
-
-    KEY="123/XYZ"
-    FILE="$(mktemp -u)"  
-
-    run cache.sh --path=$TEST_DIR put $KEY "$FILE"
-    [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "File not found: $TEST_DIR/$KEY" ]]
+    [[ -f "$TMPDIR/$KEY" ]]
 
 }

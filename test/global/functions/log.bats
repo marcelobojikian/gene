@@ -4,21 +4,19 @@
 setup() {
     load "$PROJECT_ROOT/test/helpers/bats_setup"
     loadMethods "global/functions.sh"
-    result=
 }
 
 teardown() {
-    echo "result: ${result}"
     echo "status: ${status}"
     echo "output: ${output}"
     echo "lines: ${lines[@]}"
 }
 
-@test "Invalid log" {
+@test "Should fail when type of log is invalid" {
     [[ $(log XYZ) ]]
 }
 
-@test "No show log" {
+@test "Should not show the log message" {
     export LOG_LEVEL=error
     result=$(log debug text)
     [[ -z $result ]]
@@ -30,31 +28,31 @@ teardown() {
     [[ ! -z $result ]]
 }
 
-@test "Get log debug" {
+@test "Should show debug message" {
     export LOG_LEVEL=debug
     result=$(log debug)
     [[ "${result}" == "[DEBUG]"* ]]
 }
 
-@test "Get log info" {
+@test "Should show info message" {
     export LOG_LEVEL=info
     result=$(log info)
     [[ "${result}" == "[INFO]"* ]]
 }
 
-@test "Get log warn" {
+@test "Should show warn message" {
     export LOG_LEVEL=warn
     result=$(log warn)
     [[ "${result}" == "[WARN]"* ]]
 }
 
-@test "Get log error" {
+@test "Should show error message" {
     export LOG_LEVEL=error
     result=$(log error)
     [[ "${result}" == "[ERROR]"* ]]
 }
 
-@test "Get log fatal" {
+@test "Should show fatal message" {
     export LOG_LEVEL=fatal
     result=$(log fatal)
     [[ "${result}" == "[FATAL]"* ]]

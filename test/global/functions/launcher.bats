@@ -6,84 +6,80 @@ setup() {
     loadMethods "global/functions.sh"
     export URI=$(testServer)
     export LOG_LEVEL=ERROR
-    export CACHE_PATH=$(mktemp -d)
     export CACHEABLE=false
-    result=
-
-    echo "CACHE_PATH: ${CACHE_PATH}"
+    export CACHE_PATH=$(mktemp -dp "$TMPDIR")
 }
 
 teardown() {
     rm -rf "$CACHE_PATH"
-    echo "result: ${result}"
     echo "status: ${status}"
     echo "output: ${output}"
     echo "lines: ${lines[@]}"
 }
 
-_launcher() {
+launch() {
     echo $(launcher $@)
 }
 
-@test "Invalid URL" {
+@test "Should fail when URI is not informed" {
     URI=
-    result=$(_launcher)
+    result=$(launch)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid url to download" ]]
 }
 
-@test "Cachable true but without path" {
+@test "Should fail when cachable is true andbut the cache path is empty" {
     CACHEABLE=true
     CACHE_PATH=
-    result=$(_launcher)
+    result=$(launch)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Set cache path" ]]
 }
 
-@test "Cachable true but invalid path" {
+@test "Should fail when cachable is true andbut the cache path is invalid" {
     CACHEABLE=true
-    CACHE_PATH=$(mktemp -u)
-    result=$(_launcher)
+    CACHE_PATH=$(mktemp -up "$TMPDIR")
+    result=$(launch)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"Invalid cache path: $CACHE_PATH" ]]
 }
 
-@test "Success launcher usage (no cacheable)" {
-    result=$(_launcher usage/en/cache)
+@test "Should launch and show usage key (no cacheable)" {
+    result=$(launch usage/en/cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"usage/en/cache" ]]
 }
 
-@test "Success launcher command (no cacheable)" {
-    result=$(_launcher cache)
+@test "Should launch and show command key (no cacheable)" {
+    result=$(launch cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh" ]]
 }
 
-@test "Success launcher command with large parameters" {
-    result=$(_launcher cache --teste=true enable)
+@test "Should launch with large parameters when it not exist" {
+    result=$(launch cache --teste=true enable)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh --teste=true enable" ]]
 }
 
-@test "Success launcher command with small parameters" {
-    result=$(_launcher cache -t true enable)
+@test "Should launch with small parameters when it not exist" {
+    result=$(launch cache -t true enable)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh -t true enable" ]]
 }
 
-@test "Success launcher command cacheable" {
+@test "Should launch and cache the command" {
     CACHEABLE=true
-    result=$(_launcher cache)
+    result=$(launch cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"global/cache.sh" ]]
 
     [[ -f "$CACHE_PATH/global/cache.sh" ]]
 }
 
-@test "Success launcher usage cacheable" {
+@test "Should launch and cache the usage instruction" {
     CACHEABLE=true
-    result=$(_launcher usage/en/cache)
+    result=$(launch usage/en/cache)
     [[ ! -z "$result" ]]
     [[ "${result}" == *"usage/en/cache" ]]
 
