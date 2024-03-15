@@ -31,7 +31,7 @@ done
 
 ################################################# functions
 
-log() { msg="${@:2}"; printf "$(date "+%Y-%m-%d %H:%M:%S") - [%s] - %s\n" "${1^^}" "${msg}"; }
+log() { lcoal msg="${@:2}"; printf "$(date "+%Y-%m-%d %H:%M:%S") - [%s] - %s\n" "${1^^}" "${msg}"; }
 
 setup() {
     log info Config Path: $COMMAND_PATH_CONF
@@ -60,7 +60,6 @@ download() {
 install(){
     log info Enable cache on path $COMMAND_PATH_CONF/cache
     log info "Gene installed: $($COMMAND_NAME --uri=$PROJECT_ROOT -v)"
-    # $COMMAND_NAME --uri=$PROJECT_ROOT --cache-path="$COMMAND_PATH_CONF/cache" -v
 }
 ###########################################################
 
