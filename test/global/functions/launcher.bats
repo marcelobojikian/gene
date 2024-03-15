@@ -28,7 +28,7 @@ launch() {
     [[ "${result}" == *"Invalid url to download" ]]
 }
 
-@test "Should fail when cachable is true andbut the cache path is empty" {
+@test "Should fail when cachable is true and the cache path is empty" {
     CACHEABLE=true
     CACHE_PATH=
     result=$(launch)
@@ -36,7 +36,7 @@ launch() {
     [[ "${result}" == *"Set cache path" ]]
 }
 
-@test "Should fail when cachable is true andbut the cache path is invalid" {
+@test "Should fail when cachable is true and the cache path is invalid" {
     CACHEABLE=true
     CACHE_PATH=$(mktemp -up "$TMPDIR")
     result=$(launch)
