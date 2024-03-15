@@ -7,15 +7,16 @@ setup_file() {
 
     local HOST=$(testServer)
 
-    export ENV_FILE=$(getEnv "URI=$HOST"  \
-                         "CACHEABLE=true" \
-                         "CACHE_PATH=$TMPDIR")
+    export ENV_FILE=$(getEnv "URI=$HOST"      \
+                             "CACHEABLE=true" \
+                             "CACHE_PATH=$TMPDIR")
 
 }
-
 teardown_file() { rm -f "$ENV_FILE"; }
 
-setup() { cat $ENV_FILE; }
+setup() { 
+    cat $ENV_FILE
+}
 
 teardown() {
     echo "status: ${status}"

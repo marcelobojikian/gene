@@ -6,17 +6,13 @@ setup_file() {
 
     local HOST=$(testServer)
 
-    export ENV_EMPTY=$(getEnv "URI=" \
-                       "CACHEABLE="  \
-                       "CACHE_PATH=" \
-                       "LOG_LEVEL="  \
-                       "FILE_GLOBAL_FUNC=")
+    export ENV_EMPTY=$(getEnv "URI="        \
+                              "CACHEABLE="  \
+                              "CACHE_PATH=" \
+                              "LOG_LEVEL="  \
+                              "FILE_GLOBAL_FUNC=")
 
     export ENV_MIN=$(getEnv "URI=$HOST")
-
-    export ENV_FILE=$(getEnv "URI=$HOST"  \
-                         "CACHEABLE=true" \
-                         "CACHE_PATH=$TMPDIR")
 
 }
 
@@ -28,7 +24,6 @@ setup() {
 
 launch_param() { run command.sh ${@}; }
 launch_env() { launch_param "--env-file=${1}" ${@:2}; }
-launch_default() { launch_env $ENV_FILE $@; }
 
 @test "Should fail when configure file is invalid" {
     local TEST_FILE=$(mktemp -up "$TMPDIR")

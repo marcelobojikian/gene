@@ -9,7 +9,3 @@ testServer() { echo http://localhost:8000; }
 setSrcPath() { PATH="$PROJECT_ROOT/src:$PATH"; }
 setPath() { PATH="$PROJECT_ROOT/src/${1}:$PATH"; }
 
-getEnvIn() { local FILE=$(mktemp -p "$1"); for i in ${@:2}; do echo "$i" >> $FILE; done; echo $FILE; }
-getEnv() { local FILE=$(mktemp -p "$TMPDIR"); for i in ${@}; do echo "$i" >> $FILE; done; echo $FILE; }
-
-

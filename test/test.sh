@@ -28,8 +28,58 @@ server_on(){
 }
 server_off(){ kill $server_pid; }
 
-launch_tag !server
+# Use test/setup_suite.sh
+launch_all() {
+    server_on
+        launch
+    server_off
+}
 
-server_on
-    launch_tag server
-server_off
+# Use test/[EACH_FOLDER]/setup_suite.sh
+launch_by_directory() {
+    server_on
+        launch global/cache
+        launch global/functions
+        launch command
+    server_off
+}
+
+# Use test/[EACH_FOLDER]/setup_suite.sh
+launch_by_name() {
+    server_on
+
+        launch global/cache/delete.bats
+        launch global/cache/enable.bats
+        launch global/cache/get.bats
+        launch global/cache/getopt.bats
+        launch global/cache/put.bats
+
+        launch global/functions/cache.bats
+        launch global/functions/command_key.bats
+        launch global/functions/download_key.bats
+        launch global/functions/download.bats
+        launch global/functions/launcher.bats
+        launch global/functions/log.bats
+
+        launch command/file_environment.bats
+        launch command/getopt.bats
+        launch command/opt_cacheable.bats
+        launch command/var_functions.bats
+
+    server_off
+
+}
+
+# Use test/setup_suite.sh
+launch_by_server() {
+    launch_tag !server
+    server_on
+        launch_tag server
+    server_off
+}
+
+# Using test/setup_suite.sh
+launch_all
+
+# Using test/[EACH_FOLDER]/setup_suite.sh
+# launch_by_directory
