@@ -1,14 +1,29 @@
 #!/usr/bin/env bash
+##########################################################################
+# Shellscript:	synopsis - cahce files by key
+# Author     :	Marcelo Nogueira <marcelo.bojikian@gmail.com>
+# Date       :	2024-03-15
+# Category   :	System Cache
+##########################################################################
+# Reference
+# Gene       : https://github.com/marcelobojikian/gene
+##########################################################################
+# Description
+#   Install and run modules independent of other repositories
+#
+##########################################################################
 
 set -e
 
-# Variables
+################################################# variables
 CACHE_PATH=
+###########################################################
 
-# Functions
-canonical() { 
-  echo $(eval dirname "$1")/$(basename "$1")
-}
+############################################## dependencies
+###########################################################
+
+################################################# functions
+canonical() { echo $(eval dirname "$1")/$(basename "$1"); }
 
 die() { 
   printf "${@}\nTry 'gene cache -h' for more information.\n"
@@ -50,8 +65,9 @@ main() {
     *) die "Invalid command: $target";;
   esac
 }
+###########################################################
 
-# Main
+################################################# Principal
 while getopts ':p:-:' OPTION ; do
     case "$OPTION" in
     p ) CACHE_PATH=$(canonical "$OPTARG") ;;

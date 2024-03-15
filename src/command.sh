@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
+##########################################################################
+# Shellscript:	synopsis - execute gene software
+# Author     :	Marcelo Nogueira <marcelo.bojikian@gmail.com>
+# Date       :	2024-03-15
+# Category   :	System Main
+##########################################################################
+# Reference
+# Gene       : https://github.com/marcelobojikian/gene
+##########################################################################
+# Description
+#   Install and run modules independent of other repositories
+#
+##########################################################################
 
+################################################# variables
 ENV_FILE=
 
 export URI=
@@ -8,9 +22,17 @@ export CACHE_PATH=
 export CACHEABLE=false
 
 target=
+###########################################################
 
-[[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
+############################################## dependencies
+for check in 'curl' ; do
+    if ! which "$check" &> /dev/null
+        then echo "Must have $check installed" && exit 1
+    fi
+done
+###########################################################
 
+################################################# functions
 die() { printf "${@}\nTry 'gene -h' for more information.\n" && exit 1 ; }
 
 _env() {
@@ -63,6 +85,11 @@ _usage() {
 _version() {
     echo "Version: 1.0" && exit 0
 }
+###########################################################
+
+################################################# Principal
+
+[[ ! "$1" =~ ^- && ! "$1" =~ ^-- ]] && target=$1 && shift
 
 while getopts ':vhCc:l:-:' OPTION ; do
     case "$OPTION" in

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 ##########################################################################
 # Shellscript:	synopsis - test all file using bats
-# Author     :	Heiner Steven <heiner.steven@odn.de>
+# Author     :	Marcelo Nogueira <marcelo.bojikian@gmail.com>
 # Date       :	2024-03-14
 # Category   :	System Test
 ##########################################################################
