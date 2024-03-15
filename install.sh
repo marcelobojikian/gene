@@ -31,7 +31,7 @@ done
 
 ################################################# functions
 
-log() { lcoal msg="${@:2}"; printf "$(date "+%Y-%m-%d %H:%M:%S") - [%s] - %s\n" "${1^^}" "${msg}"; }
+log() { msg="${@:2}"; printf "$(date "+%Y-%m-%d %H:%M:%S") - [%s] - %s\n" "${1^^}" "${msg}"; }
 
 setup() {
     log info Config Path: $COMMAND_PATH_CONF
