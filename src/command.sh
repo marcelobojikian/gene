@@ -119,6 +119,13 @@ while getopts ':vhCc:l:-:' OPTION ; do
 done
 
 [ -z $ENV_FILE ] && . ~/.gene/environment.conf
+
+if [[ "$1" =~ ^- ]] ; then
+  SHORT=${1/#-/}
+  NO_C=${SHORT/#C/}
+  [ -z $NO_C ] && shift || shift 2
+fi
+
 [ -z $target ] && _usage $1 && shift
 
 _command $@
