@@ -50,8 +50,7 @@ main() {
     "get")
       [ -z "$1" ] && die "Cache object must be informed"
       local KEY="$CACHE_PATH/$1"
-      [ ! -f "$KEY" ] && echo "Cache not found: $KEY" && exit 1
-      echo $KEY
+      [ -f "$KEY" ] && echo $KEY
     ;;
     "put")
       [ -z "$1" ] || [ -z "$2" ] && die "Cache object and file must be informed"

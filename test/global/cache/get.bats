@@ -38,11 +38,11 @@ teardown() {
 
     run cache.sh --path=$TMPDIR get $KEY
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache not found: $TMPDIR/$KEY" ]]
+    [[ -z "${lines[0]}" ]]
 
     run cache.sh -p $TMPDIR get $KEY
     [[ "${status}" -eq 1 ]]
-    [[ "${lines[0]}" == "Cache not found: $TMPDIR/$KEY" ]]
+    [[ -z "${lines[0]}" ]]
 
 }
 

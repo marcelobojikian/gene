@@ -65,7 +65,7 @@ download_key() {
     
     mkdir -p $(dirname "$TO_FILE")
     download "$FROM_URL" "$TO_FILE"
-    chmod +x "$TO_FILE"
+    chmod u+x "$TO_FILE"
 
   fi
 
@@ -83,7 +83,7 @@ cache() {
 
   local file_cache=$(download_key "$BASE_URL" "$FOLDER" "global/cache.sh")
   
-  local new_cmd_cached=$($file_cache -p "$FOLDER" get "$KEY" 1> /dev/null)
+  local new_cmd_cached=$($file_cache -p "$FOLDER" get "$KEY")
   if [ -z $new_cmd_cached  ] ; then
     local new_file=$(download_key "$BASE_URL" "$(mktemp -d)" "$KEY")
     new_cmd_cached=$($file_cache -p $FOLDER put "$KEY" "$new_file")
@@ -107,7 +107,7 @@ launcher() {
     SOURCE=$(cache "$URI" "$CACHE_PATH" "$KEY")
   else
     SOURCE=$(download_key "$URI" "$SOURCE" "$KEY")
-    chmod +x "$SOURCE"
+    chmod u+x "$SOURCE"
   fi
 
   echo $SOURCE $PARAMS
