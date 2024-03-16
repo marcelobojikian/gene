@@ -43,7 +43,7 @@ setup() {
 URI=$PROJECT_ROOT/src
 CACHEABLE=true
 CACHE_PATH=$COMMAND_PATH_CONF/cache
-FUNCTIONS=$COMMAND_PATH_CONF/cache/global/functions.sh
+FILE_GLOBAL_FUNC=$COMMAND_PATH_CONF/cache/global/functions.sh
 LOG_LEVEL=ERROR
 EOF
 }
