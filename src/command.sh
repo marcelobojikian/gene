@@ -93,7 +93,7 @@ _version() {
 
 while getopts ':vhCc:l:-:' OPTION ; do
     case "$OPTION" in
-    h ) _usage ;;
+    h ) _usage $target ;;
     v ) _version ;;
     C ) CACHEABLE=true ;;
     c ) CACHE_PATH="$OPTARG" && CACHEABLE=true ;;
@@ -103,7 +103,7 @@ while getopts ':vhCc:l:-:' OPTION ; do
          OPTARG=$(echo $OPTION | cut -d'=' -f2)
          OPTION=$(echo $OPTION | cut -d'=' -f1)
          case $OPTION in
-            --help) _usage ;;
+            --help) _usage $target ;;
             --version) _version ;;
             --cache-path) CACHE_PATH="$OPTARG" && CACHEABLE=true ;;
             --log-level) LOG_LEVEL="$OPTARG" ;;
