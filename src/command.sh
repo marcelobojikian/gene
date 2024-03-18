@@ -60,7 +60,7 @@ _functions() {
     . "$FILE_GLOBAL_FUNC"
   fi
 
-  [ ${HTTP_CODE} -ne 200 ] && echo "Url invalida: ${URI}" && exit 1
+  [ ${HTTP_CODE} -ne 200 ] && echo "Invalid URL: ${URI}" && exit 1
 
 }
 

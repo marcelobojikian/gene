@@ -42,7 +42,7 @@ launch_env() { launch_param "--env-file=${1}" ${@:2}; }
     local URI=http://invalid.uri
     launch_env $(getEnv "URI=$URI")
     assert_failure
-    assert_line "Url invalida: $URI"
+    assert_line "Invalid URL: $URI"
 }
 
 @test "Should show usage message when URI is OK" {
