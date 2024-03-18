@@ -25,7 +25,7 @@ launch() {
     URI=
     result=$(launch)
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid url to download" ]]
+    [[ "${result}" == "Invalid url to download" ]]
 }
 
 @test "Should fail when cachable is true and the cache path is empty" {
@@ -33,7 +33,7 @@ launch() {
     CACHE_PATH=
     result=$(launch)
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Set cache path" ]]
+    [[ "${result}" == "Set cache path" ]]
 }
 
 @test "Should fail when cachable is true and the cache path is invalid" {
@@ -41,7 +41,7 @@ launch() {
     CACHE_PATH=$(mktemp -up "$TMPDIR")
     result=$(launch)
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid cache path: $CACHE_PATH" ]]
+    [[ "${result}" == "Invalid cache path: $CACHE_PATH" ]]
 }
 
 @test "Should launch and show usage key (no cacheable)" {

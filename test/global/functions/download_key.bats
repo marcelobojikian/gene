@@ -22,21 +22,21 @@ launch() {
 @test "Sould fail when informed less than 3 parameters" {
     result=$(launch)
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid download key parameters" ]]
+    [[ "${result}" == "Invalid download key parameters" ]]
 
     result=$(launch "$HOST")
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid download key parameters" ]]
+    [[ "${result}" == "Invalid download key parameters" ]]
 
     result=$(launch "$HOST" "folder")
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid download key parameters" ]]
+    [[ "${result}" == "Invalid download key parameters" ]]
 }
 
 @test "Should fail when parameter folder is invalid" {
     result=$(launch "$HOST" "$(mktemp -up "$TMPDIR")" "any")
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Path download key is not a folder" ]]
+    [[ "${result}" == "Path download key is not a folder" ]]
 }
 
 @test "Should download file cache.sh when requested" {

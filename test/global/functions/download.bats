@@ -28,11 +28,11 @@ launch() {
 @test "Should fail when Url not found" {
     result=$(launch "$HOST/usage/XXXXX" "$TEST_FILE")
     [[ ! -f "$TEST_FILE" ]]
-    [[ "${result}" == *"Url not found: "* ]]
+    [[ "${result}" == "Url not found: "* ]]
 }
 
 @test "Should fail when Url is invalid" {
     result=$(launch "https://invali.url" "$TEST_FILE")
     [[ ! -f "$TEST_FILE" ]]
-    [[ "${result}" == *"Downloaded fail: "* ]]
+    [[ "${result}" == "Unexpected fail: "* ]]
 }

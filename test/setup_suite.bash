@@ -5,8 +5,8 @@ setup_suite() {
     export -f getEnv
 }
 
-getEnvIn() { local FILE=$(mktemp -p "$1"); for i in ${@:2}; do echo "$i" >> $FILE; done; echo $FILE; }
-getEnv() {  local FILE=$(mktemp -p "$TMPDIR"); for i in ${@}; do echo "$i" >> $FILE; done; echo $FILE; }
+getEnvIn() { local FILE=$(mktemp -p "$1"); for i in ${@:2}; do echo "$i" >> $FILE; done; echo "LOG_LEVEL=fatal" >> $FILE; echo $FILE; }
+getEnv() {  local FILE=$(mktemp -p "$TMPDIR"); for i in ${@}; do echo "$i" >> $FILE; done; echo "LOG_LEVEL=fatal" >> $FILE; echo $FILE; }
 
 teardown_suite() {
     rm -rf "$TMPDIR"

@@ -57,7 +57,7 @@ clear() {
                  "$PARAM_FILE_FUNC")
     launch_env $ENV -C
     assert_failure
-    [[ "${lines[0]}" == *"Set cache path" ]]
+    [[ "${lines[0]}" == "Set cache path" ]]
 }
 
 @test "Should cache when use option -C" {

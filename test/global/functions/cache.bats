@@ -23,15 +23,15 @@ launch() {
 @test "Sould fail when informed less than 3 parameters" {
     result=$(launch)
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid cache parameters" ]]
+    [[ "${result}" == "Invalid cache parameters" ]]
 
     result=$(launch "$HOST")
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid cache parameters" ]]
+    [[ "${result}" == "Invalid cache parameters" ]]
 
     result=$(launch "$HOST" "folder")
     [[ ! -z "$result" ]]
-    [[ "${result}" == *"Invalid cache parameters" ]]
+    [[ "${result}" == "Invalid cache parameters" ]]
 }
 
 @test "Should download cache.sh to use cahcing and cache a object" {
